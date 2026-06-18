@@ -1,7 +1,7 @@
 import 'server-only'
 import mongoose, { type ConnectOptions, type Mongoose } from 'mongoose'
 
-const MONGODB_URI = process.env.MONGODB_URI ?? ''
+const MONGODB_URI = process.env.MONGODB_URI?.trim() ?? ''
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -35,6 +35,9 @@ export async function connectToDatabase(): Promise<Mongoose> {
     const options: ConnectOptions = {
       // Disable Mongoose command buffering to fail fast if not connected.
       bufferCommands: false,
+      // Make connection failures surface quickly during local development.
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
     }
 
     // Store the in-flight promise so concurrent calls share one connection attempt.
@@ -46,6 +49,12 @@ export async function connectToDatabase(): Promise<Mongoose> {
   } catch (error) {
     // Reset the promise so future calls can retry after a failed attempt.
     cached.promise = null
+    if (error instanceof Error && MONGODB_URI.startsWith('mongodb+srv://')) {
+      error.message =
+        `${error.message} ` +
+        'If this is an Atlas SRV URI, verify that your IP is allowed in Atlas Network Access ' +
+        'or switch to Atlas\'s standard mongodb:// connection string.'
+    }
     throw error
   }
 
