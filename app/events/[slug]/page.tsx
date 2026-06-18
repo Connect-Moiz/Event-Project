@@ -6,6 +6,7 @@ import EventModel from "@/database/event.model";
 import type { Event as EventData } from "@/database";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { cacheLife } from "next/cache";
 
 type PageProps = {
   params: Promise<{
@@ -50,6 +51,8 @@ const EventTags = ({ tags }: { tags: string[] }) => (
 );
 
 const EventDetailsPage = async ({ params }: PageProps) => {
+  'use cache'
+  cacheLife('hours')
   const { slug } = await params;
 
   await connectToDatabase();
@@ -115,7 +118,7 @@ const EventDetailsPage = async ({ params }: PageProps) => {
               <p className="text-sm">Be the first to book your spot!</p>
             )}
 
-            <BookEvent />
+            <BookEvent eventId={String((event as EventData & { _id: string })._id)} slug={event.slug}/>
           </div>
         </aside>
       </div>
