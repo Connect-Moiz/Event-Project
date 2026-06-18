@@ -128,6 +128,13 @@ const eventSchema = new Schema<Event>(
 // Keep a dedicated unique index on slug for fast lookup and uniqueness enforcement.
 eventSchema.index({ slug: 1 }, { unique: true })
 
+// Generate a slug early so required validation sees a populated value.
+eventSchema.pre('validate', function preValidateEvent(this: EventDocument) {
+  if (this.isModified('title') || !this.slug) {
+    this.slug = createSlug(this.title)
+  }
+})
+
 // Pre-save normalization validates required values, keeps slug synced with title, and normalizes date/time.
 eventSchema.pre('save', function preSaveEvent(this: EventDocument) {
   for (const fieldName of REQUIRED_TEXT_FIELDS) {
@@ -150,10 +157,6 @@ eventSchema.pre('save', function preSaveEvent(this: EventDocument) {
   }
   this.tags = cleanTags
 
-  if (this.isModified('title') || !this.slug) {
-    this.slug = createSlug(this.title)
-  }
-
   this.date = normalizeDateToIso(this.date)
   this.time = normalizeTime(this.time)
 })
@@ -167,4 +170,4 @@ export type EventWithTimestamps = Event & {
 
 export type EventHydratedDocument = EventDocument
 
-export default EventModel
+export default EventModel;

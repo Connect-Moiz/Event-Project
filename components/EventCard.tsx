@@ -1,16 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { EventItem } from "@/lib/constant";
 
-interface Props {
-    title: string;
-    image: string;
-    slug: string;
-    location: string;
-    date: string;
-    time: string;
-}
+type Props = EventItem
 
-const EventCard = ({ title, image, slug, location, date, time}: Props) => {
+const EventCard = ({ title, image, slug, location, date, time }: Props) => {
     return (
         <Link href={`/events/${slug}`} id="event-card">
         <Image src={image} alt={title} width={410} height={300} className="poster" />

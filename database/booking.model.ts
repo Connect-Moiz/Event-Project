@@ -59,4 +59,4 @@ export type BookingWithTimestamps = Booking & {
   updatedAt: Date
 }
 
-export default BookingModel
+export default BookingModel;
